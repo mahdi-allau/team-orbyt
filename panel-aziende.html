@@ -1,0 +1,169 @@
+<title>Pannello Aziende a Costo Zero</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: cruscotto. Intestazione con regole del gioco, calcolatore ricavi sticky, griglia di schede attività filtrabili, tabella percorso */
+:root{--bg:#f4f6f6;--surface:#fff;--ink:#0e1b1a;--muted:#46585a;--line:#c3cfce;--accent:#0b6b63;--accent-ink:#fff;--soft:#dff1ee;--warn:#8a4b00;--warn-bg:#fdf0d8;--good:#0b6b63;
+--display:"Bricolage Grotesque","Segoe UI",Arial,sans-serif;--body:"DM Sans","Segoe UI",Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1514;--surface:#15211f;--ink:#f0f7f6;--muted:#b3c5c2;--line:#46605c;--accent:#4fd1bf;--accent-ink:#04201c;--soft:#173a35;--warn:#ffd28a;--warn-bg:#3a2a10;--good:#4fd1bf;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1514;--surface:#15211f;--ink:#f0f7f6;--muted:#b3c5c2;--line:#46605c;--accent:#4fd1bf;--accent-ink:#04201c;--soft:#173a35;--warn:#ffd28a;--warn-bg:#3a2a10;--good:#4fd1bf;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;padding-inline:16px;padding-block:28px}
+main{max-width:1080px;margin-inline:auto;display:flex;flex-direction:column;gap:24px}
+h1{font-family:var(--display);font-size:clamp(2rem,6vw,2.9rem);line-height:1.1;margin:0 0 8px;text-wrap:balance}
+h2{font-family:var(--display);font-size:1.45rem;margin:0 0 10px}
+p{margin:0}
+.lead{color:var(--muted);max-width:68ch}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.rule b{display:block;margin-bottom:2px}
+.warn{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:14px 16px;font-weight:500}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.total{display:flex;flex-wrap:wrap;gap:16px;align-items:baseline;justify-content:space-between}
+.big{font-family:var(--display);font-size:2.4rem;color:var(--accent);font-variant-numeric:tabular-nums}
+.sub{color:var(--muted);font-size:.9rem}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.filters button{font:inherit;font-weight:700;font-size:.9rem;padding:8px 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.filters button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card h3{font-family:var(--display);font-size:1.25rem;margin:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:.78rem;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--accent)}
+.tag.rec{background:var(--accent);color:var(--accent-ink)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.92rem}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.steps{margin:0;padding-left:20px;font-size:.92rem}
+.steps li{margin:2px 0}
+.card .foot{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:36px;height:36px;font:inherit;font-weight:700;font-size:1.2rem;border-radius:8px;border:2px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+.stepper output{min-width:2ch;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+select{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:8px;padding:6px 8px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.95rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--soft)}
+footer{color:var(--muted);font-size:.85rem}
+</style>
+
+<main>
+<header>
+<h1>Pannello delle aziende che possiamo aprire a costo zero</h1>
+<p class="lead">Tutte le idee qui sotto si fanno con un computer, Claude Code e strumenti gratuiti. Scegli quelle che vuoi attivare, indica quanti clienti vuoi e vedi quanto potresti incassare al mese.</p>
+</header>
+
+<section class="rules" aria-label="Regole del gioco">
+<div class="rule"><b>Costo di partenza: 0 €</b>Hosting gratuito (Netlify, Cloudflare Pages, GitHub Pages), strumenti gratuiti, nessun magazzino.</div>
+<div class="rule"><b>Il cliente paga i suoi costi</b>Dominio (circa 10-15 €/anno) e pubblicità sono a carico del cliente, mai vostri.</div>
+<div class="rule"><b>Si incassa prima di lavorare</b>Acconto del 30-50% alla firma: non anticipate mai soldi vostri.</div>
+<div class="rule"><b>Una cosa alla volta</b>Partite con 1-2 attività e aggiungetene altre dopo i primi incassi.</div>
+</section>
+
+<div class="warn">Le cifre sono stime indicative, non garanzie. Il guadagno dipende da quanti clienti riuscite a trovare. Il lavoro tecnico lo velocizza Claude Code, ma vendere, parlare con i clienti e controllare il risultato restano compiti vostri.</div>
+
+<section class="panel" aria-live="polite">
+<div class="total">
+<div><h2>Incasso mensile stimato</h2><p class="sub" id="totSub"></p></div>
+<div class="big" id="tot">0 €</div>
+</div>
+</section>
+
+<section aria-label="Filtri"><div class="filters" id="filters" role="group" aria-label="Filtra le attività"></div></section>
+
+<section class="grid" id="grid"></section>
+
+<section class="panel">
+<h2>Percorso consigliato</h2>
+<div class="scroll"><table>
+<thead><tr><th>Fase</th><th>Cosa fate</th><th>Obiettivo</th></tr></thead>
+<tbody>
+<tr><td><b>Settimana 1</b></td><td>Scegliete 1 attività dalle schede. Fate con Claude Code 2 esempi pronti da mostrare (anche per attività inventate).</td><td>Portfolio minimo</td></tr>
+<tr><td><b>Settimana 2</b></td><td>Contattate 30 attività locali con un esempio fatto per loro. Usate il modulo Brief Cliente per raccogliere le richieste.</td><td>3-5 conversazioni vere</td></tr>
+<tr><td><b>Settimane 3-4</b></td><td>Chiudete il primo cliente con acconto. Consegnate in pochi giorni, chiedete una recensione.</td><td>Primo incasso</td></tr>
+<tr><td><b>Mese 2</b></td><td>Proponete al cliente un servizio mensile (manutenzione, contenuti social, aggiornamenti).</td><td>Ricavo ricorrente</td></tr>
+<tr><td><b>Mese 3</b></td><td>Aggiungete la seconda attività dal pannello e riusate i clienti già acquisiti.</td><td>Più fonti di incasso</td></tr>
+</tbody></table></div>
+</section>
+
+<footer>Prezzi in euro, indicativi per il mercato italiano. Verificate con un commercialista come dichiarare i ricavi prima del primo incasso.</footer>
+</main>
+
+<script>
+var B=[
+{id:"sito",n:"Siti vetrina per attività locali",cat:"web",rec:false,diff:"Facile",tempo:"2-4 giorni",setup:[300,1200],mensile:[0,50],
+ vendi:"Sito di 4-6 pagine per ristoranti, studi, negozi, artigiani, con contatti e mappa.",
+ claude:"Genera struttura, testi, design e codice del sito; lo pubblica su hosting gratuito.",
+ passi:["Scegli una nicchia (es. parrucchieri)","Fai un sito esempio con Claude Code","Mostralo a 30 attività della zona"],prezzo:600,ricorr:false},
+{id:"menu",n:"Menu digitale e QR per ristoranti e bar",cat:"web",rec:true,diff:"Molto facile",tempo:"1 giorno",setup:[80,250],mensile:[10,30],
+ vendi:"Menu online con QR code, multilingua e aggiornabile in pochi minuti.",
+ claude:"Crea la pagina del menu, le traduzioni e il QR; aggiorna prezzi e piatti su richiesta.",
+ passi:["Cerca locali con menu cartaceo o PDF","Mostra un menu di esempio","Proponi aggiornamenti mensili a canone"],prezzo:150,ricorr:true},
+{id:"landing",n:"Pagina di vendita e landing per eventi e professionisti",cat:"web",rec:false,diff:"Facile",tempo:"1-2 giorni",setup:[150,500],mensile:[0,0],
+ vendi:"Singola pagina per promuovere un evento, un corso, un'offerta o un professionista.",
+ claude:"Scrive i testi persuasivi, costruisce la pagina e il modulo di contatto.",
+ passi:["Cerca chi organizza eventi o corsi","Offri una pagina in 24 ore","Chiedi una seconda pagina per il prossimo evento"],prezzo:300,ricorr:false},
+{id:"tool",n:"Strumenti web su misura (preventivatori, calcolatori, moduli)",cat:"tool",rec:true,diff:"Media",tempo:"2-5 giorni",setup:[300,1500],mensile:[20,80],
+ vendi:"Piccole app per l'attività: preventivatore online, calcolatore, modulo prenotazioni, pannello clienti.",
+ claude:"Scrive e testa l'app e la collega a fogli e database gratuiti.",
+ passi:["Chiedi ai clienti che lavoro ripetitivo fanno a mano","Costruisci una versione base","Vendila a canone con assistenza"],prezzo:700,ricorr:true},
+{id:"auto",n:"Automazioni e fogli intelligenti per piccole aziende",cat:"tool",rec:false,diff:"Media",tempo:"2-4 giorni",setup:[200,1000],mensile:[30,100],
+ vendi:"Sistemi che fanno da soli report, riepiloghi, promemoria, importazioni da Excel o Google Sheets.",
+ claude:"Scrive gli script e i fogli, li documenta e li corregge quando qualcosa cambia.",
+ passi:["Trova studi e negozi che usano molti fogli Excel","Automatizza un loro processo","Proponi manutenzione mensile"],prezzo:500,ricorr:true},
+{id:"social",n:"Contenuti e calendario social mensile",cat:"marketing",rec:true,diff:"Facile",tempo:"Ogni mese",setup:[0,100],mensile:[150,500],
+ vendi:"Piano editoriale, testi dei post, idee di video e risposte ai commenti per le attività.",
+ claude:"Scrive calendario, caption, hashtag e copioni video adatti al settore del cliente.",
+ passi:["Scegli 1 settore e studia i suoi bisogni","Prepara un mese di prova per un cliente","Passa a canone mensile"],prezzo:250,ricorr:true},
+{id:"seo",n:"Google Business e posizionamento locale",cat:"marketing",rec:false,diff:"Facile",tempo:"1-3 giorni",setup:[100,400],mensile:[50,200],
+ vendi:"Ottimizzazione della scheda Google, testi per il sito e risposte alle recensioni.",
+ claude:"Analizza il sito, scrive testi ottimizzati, prepara risposte alle recensioni e un piano di miglioramento.",
+ passi:["Controlla 20 schede Google della zona","Invia ai titolari i punti da migliorare","Offri la correzione e il servizio mensile"],prezzo:250,ricorr:true},
+{id:"multi",n:"Traduzione e versioni multilingua di siti",cat:"web",rec:false,diff:"Molto facile",tempo:"1-2 giorni",setup:[100,400],mensile:[0,30],
+ vendi:"Il sito o il menu del cliente in inglese, tedesco, francese o altre lingue.",
+ claude:"Traduce mantenendo il tono dell'attività e adatta le pagine.",
+ passi:["Cerca attività in zone turistiche","Proponi la traduzione del sito","Aggiungi aggiornamenti mensili"],prezzo:200,ricorr:false},
+{id:"prodotti",n:"Prodotti digitali (guide, modelli, kit)",cat:"prodotti",rec:false,diff:"Facile",tempo:"Una volta, poi si ripete",setup:[0,0],mensile:[30,300],
+ vendi:"Guide PDF, modelli di contratto, fogli e kit per un settore, venduti più volte senza lavoro extra.",
+ claude:"Scrive il contenuto, impagina i modelli e crea le pagine di vendita.",
+ passi:["Scegli un problema preciso di una categoria","Crea il prodotto una volta sola","Vendilo su piattaforme gratuite da aprire (commissione solo sulle vendite)"],prezzo:60,ricorr:true}
+];
+var CATS=[["tutte","Tutte"],["web","Siti web"],["tool","Strumenti"],["marketing","Marketing"],["prodotti","Prodotti digitali"],["rec","Ricorrenti"]];
+var cat="tutte",st={};
+try{var s=localStorage.getItem("pannello");if(s)st=JSON.parse(s)||{}}catch(e){}
+B.forEach(function(b){if(!st[b.id])st[b.id]={q:0,p:b.prezzo}});
+function save(){try{localStorage.setItem("pannello",JSON.stringify(st))}catch(e){}}
+function eur(n){return n.toLocaleString("it-IT")+" €"}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function renderFilters(){
+ document.getElementById("filters").innerHTML=CATS.map(function(c){return '<button type="button" data-c="'+c[0]+'" aria-pressed="'+(cat===c[0])+'">'+c[1]+'</button>'}).join("");
+}
+function renderCards(){
+ var list=B.filter(function(b){return cat==="tutte"||(cat==="rec"?b.ricorr:b.cat===cat)});
+ document.getElementById("grid").innerHTML=list.map(function(b){
+  var s=st[b.id];
+  return '<article class="card"><div class="tags"><span class="tag">'+esc(b.diff)+'</span>'+(b.ricorr?'<span class="tag rec">Ricorrente</span>':'')+(b.rec?'<span class="tag rec">Consigliata</span>':'')+'</div>'
+  +'<h3>'+esc(b.n)+'</h3><p>'+esc(b.vendi)+'</p>'
+  +'<dl class="kv"><dt>Claude Code</dt><dd>'+esc(b.claude)+'</dd><dt>Costo di avvio</dt><dd>0 €</dd><dt>Consegna</dt><dd>'+esc(b.tempo)+'</dd>'
+  +'<dt>Prezzo tipico</dt><dd>'+eur(b.setup[0])+(b.setup[1]>b.setup[0]?' - '+eur(b.setup[1]):'')+(b.mensile[1]>0?' + '+eur(b.mensile[0])+' - '+eur(b.mensile[1])+'/mese':'')+'</dd></dl>'
+  +'<ol class="steps">'+b.passi.map(function(p){return '<li>'+esc(p)+'</li>'}).join("")+'</ol>'
+  +'<div class="foot"><span class="sub">Clienti al mese</span><div class="stepper"><button type="button" data-a="dec" data-id="'+b.id+'" aria-label="Meno clienti">-</button><output id="q_'+b.id+'">'+s.q+'</output><button type="button" data-a="inc" data-id="'+b.id+'" aria-label="Più clienti">+</button></div></div>'
+  +'</article>';
+ }).join("");
+}
+function renderTotal(){
+ var tot=0,n=0,att=[];
+ B.forEach(function(b){var s=st[b.id];if(s.q>0){tot+=s.q*s.p;n+=s.q;att.push(b.n)}});
+ document.getElementById("tot").textContent=eur(tot);
+ document.getElementById("totSub").textContent=n?n+" clienti al mese su "+att.length+" attività, con il prezzo tipico di ciascuna":"Aggiungi clienti alle schede per vedere la stima";
+}
+document.addEventListener("click",function(e){
+ var f=e.target.closest("[data-c]");
+ if(f){cat=f.getAttribute("data-c");renderFilters();renderCards();return}
+ var a=e.target.closest("[data-a]");
+ if(a){var id=a.getAttribute("data-id");var s=st[id];
+  s.q=Math.max(0,Math.min(30,s.q+(a.getAttribute("data-a")==="inc"?1:-1)));
+  document.getElementById("q_"+id).textContent=s.q;save();renderTotal()}
+});
+renderFilters();renderCards();renderTotal();
+</script>
